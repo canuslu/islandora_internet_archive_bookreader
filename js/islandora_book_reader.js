@@ -9,8 +9,6 @@
    * Constructor
    */
   IslandoraBookReader = function(settings) {
-    this.defaults = settings.defaults;
-//    this.mode = settings.mode;
     BookReader.call(this);
     this.settings = settings;
     this.numLeafs = settings.pageCount;
@@ -18,6 +16,7 @@
     this.bookUrl = document.location.toString();
     this.imagesBaseURL = settings.imagesFolderUri;
     this.logoURL = '';
+    this.defaults = settings.defaults;
 
     this.fullscreen = false;
     this.content_type = settings.content_type;
@@ -955,65 +954,62 @@ IslandoraBookReader.prototype.blankFulltextDiv = function() {
        // We are on the Drupal Admin overlay. return instead of processing the Params.
        return;
      }
-     // Call the original Method.
-//     return BookReader.prototype.paramsFromFragment(urlFragment);
-        // URL fragment syntax specification: http://openlibrary.org/dev/docs/bookurls
+     // Overwrite original Method to address scoping bug..
+     var params = {};
 
-    var params = {};
+     // For convenience we allow an initial # character (as from window.location.hash)
+     // but don't require it
+     if (urlFragment.substr(0,1) == '#') {
+       urlFragment = urlFragment.substr(1);
+     }
 
-    // For convenience we allow an initial # character (as from window.location.hash)
-    // but don't require it
-    if (urlFragment.substr(0,1) == '#') {
-        urlFragment = urlFragment.substr(1);
-    }
+     // Simple #nn syntax
+     var oldStyleLeafNum = parseInt( /^\d+$/.exec(urlFragment) );
+     if ( !isNaN(oldStyleLeafNum) ) {
+       params.index = oldStyleLeafNum;
 
-    // Simple #nn syntax
-    var oldStyleLeafNum = parseInt( /^\d+$/.exec(urlFragment) );
-    if ( !isNaN(oldStyleLeafNum) ) {
-        params.index = oldStyleLeafNum;
+       // Done processing if using old-style syntax
+       return params;
+     }
 
-        // Done processing if using old-style syntax
-        return params;
-    }
+     // Split into key-value pairs
+     var urlArray = urlFragment.split('/');
+     var urlHash = {};
+     for (var i = 0; i < urlArray.length; i += 2) {
+       urlHash[urlArray[i]] = urlArray[i+1];
+     }
 
-    // Split into key-value pairs
-    var urlArray = urlFragment.split('/');
-    var urlHash = {};
-    for (var i = 0; i < urlArray.length; i += 2) {
-        urlHash[urlArray[i]] = urlArray[i+1];
-    }
+     // Mode
+     if ('1up' == urlHash['mode']) {
+       params.mode = BookReader().constMode1up;
+     } else if ('2up' == urlHash['mode']) {
+       params.mode = BookReader().constMode2up;
+     } else if ('thumb' == urlHash['mode']) {
+       params.mode = BookReader().constModeThumb;
+     }
 
-    // Mode
-    if ('1up' == urlHash['mode']) {
-        params.mode = BookReader().constMode1up;
-    } else if ('2up' == urlHash['mode']) {
-        params.mode = BookReader().constMode2up;
-    } else if ('thumb' == urlHash['mode']) {
-        params.mode = BookReader().constModeThumb;
-    }
+     // Index and page
+     if ('undefined' != typeof(urlHash['page'])) {
+       // page was set -- may not be int
+       params.page = urlHash['page'];
+     }
 
-    // Index and page
-    if ('undefined' != typeof(urlHash['page'])) {
-        // page was set -- may not be int
-        params.page = urlHash['page'];
-    }
+     // $$$ process /region
+     // $$$ process /search
 
-    // $$$ process /region
-    // $$$ process /search
+     if (urlHash['search'] != undefined) {
+       params.searchTerm = BookReader.util.decodeURIComponentPlus(urlHash['search']);
+     }
 
-    if (urlHash['search'] != undefined) {
-        params.searchTerm = BookReader.util.decodeURIComponentPlus(urlHash['search']);
-    }
+     // $$$ process /highlight
 
-    // $$$ process /highlight
+     // $$$ process /theme
+     if (urlHash['theme'] != undefined) {
+       params.theme = urlHash['theme']
+     }
+     return params;
+  }
 
-    // $$$ process /theme
-    if (urlHash['theme'] != undefined) {
-        params.theme = urlHash['theme']
-    }
-    return params;
-
-   }
   // Overrides buildShareDiv().
    IslandoraBookReader.prototype.buildShareDiv = function(jShareDiv) {
      BookReader.prototype.buildShareDiv.call(this, jShareDiv);
@@ -1024,7 +1020,5 @@ IslandoraBookReader.prototype.blankFulltextDiv = function() {
      // No embed for us.
      jShareDiv.find('fieldset.fieldset-embed').remove();
    }
-
-
 
 })(jQuery);
