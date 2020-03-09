@@ -16,6 +16,7 @@
     this.bookUrl = document.location.toString();
     this.imagesBaseURL = settings.imagesFolderUri;
     this.logoURL = '';
+    this.mode = settings.mode;
     this.defaults = settings.defaults;
 
     this.fullscreen = false;
@@ -980,12 +981,16 @@ IslandoraBookReader.prototype.blankFulltextDiv = function() {
      }
 
      // Mode
-     if ('1up' == urlHash['mode']) {
-       params.mode = BookReader().constMode1up;
-     } else if ('2up' == urlHash['mode']) {
-       params.mode = BookReader().constMode2up;
-     } else if ('thumb' == urlHash['mode']) {
-       params.mode = BookReader().constModeThumb;
+     switch (parseInt(urlHash['mode'])) {
+       case 1:
+         params.mode = BookReader().constMode1up;
+         break;
+       case 2:
+         params.mode = BookReader().constMode2up;
+         break;
+       case 3:
+         params.mode = BookReader().constModeThumb;
+         break;
      }
 
      // Index and page
