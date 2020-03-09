@@ -25,7 +25,7 @@ function template_preprocess_islandora_internet_archive_bookreader(array &$varia
   }
   else {
     // Defaults to global viewer config.
-    $view_mode = (int) variable_get('islandora_internet_archive_bookreader_default_page_view', '1');
+    $view_mode = (int) variable_get('islandora_internet_archive_bookreader_default_page_view', 1);
   }
   $hascover = islandora_paged_content_get_hascover($object) == 'true' ? TRUE : FALSE;
   $page_source = variable_get('islandora_internet_archive_bookreader_pagesource', 'djatoka');
