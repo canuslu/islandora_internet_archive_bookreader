@@ -91,6 +91,7 @@ function template_preprocess_islandora_internet_archive_bookreader(array &$varia
       'mobilize' => variable_get('islandora_internet_archive_bookreader_mobile_full_screen', FALSE),
       'content_type' => variable_get('islandora_internet_archive_bookreader_content_type', 'book'),
       'hasCover' => $hascover,
+      'defaults' => "mode/$view_mode",
     ) + $page_source_settings,
   );
 
